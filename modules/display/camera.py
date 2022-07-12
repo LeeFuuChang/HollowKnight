@@ -201,11 +201,14 @@ class CameraModes:
 
 
 class Camera(CameraModes):
-    def __init__(self, displaySize, target, defaultActiveMode=const.camera.CAMERA_MODE_BOTTOM_RIGHT_NORMAL):
+    def __init__(self, displaySize, displayOffset, target, defaultActiveMode=const.camera.CAMERA_MODE_BOTTOM_RIGHT_NORMAL):
         self.mode = defaultActiveMode
 
         self.displayWidth = displaySize[0]
         self.displayHeight = displaySize[1]
+        self.displayOffset = displayOffset
+
+        self.surface = pygame.Surface(displaySize)
 
         self.interface = Interface(displaySize=displaySize)
 
@@ -302,7 +305,7 @@ class Camera(CameraModes):
         )
         return self.desiredPosition
 
-    def updateVelocity(self, pressedKeys):
+    def updateVelocity(self):
         idx1, idx2, idx3 = self.getCameraModeIndex()
         self.mode = const.camera.CAMERA_MODE_MATRIX[idx1][idx2][idx3]
         self.updateDesiredCameraPosition()
@@ -350,8 +353,8 @@ class Camera(CameraModes):
             if box.collideWithPoint( (targetCTX, targetCTY) ):
                 return box
 
-    def update(self, pressedKeys, boundingBoxes):
-        self.updateVelocity(pressedKeys=pressedKeys)
+    def update(self, boundingBoxes):
+        self.updateVelocity()
 
         self.position.add(self.velocity)
 
@@ -364,13 +367,12 @@ class Camera(CameraModes):
 
 
 
-    def draw(self, window):
-        im = bgggggggggggggggggg.crop((self.position.x, self.position.y, self.position.x+self.displayWidth, self.position.y+self.displayHeight))
+    def draw(self, window, currentLevel):
+        baseBackground = currentLevel.background.getView(self.position.x, self.position.y, self.displayWidth, self.displayHeight)
+        self.surface.blit(baseBackground, (0, 0))
 
-        window.blit(
-            pygame.image.fromstring(im.tobytes(), im.size, im.mode), (0, 0)
-        )
+        self.target.draw(window=self.surface, cameraWorldPos=self.position)
 
-        self.target.draw(window=window, cameraWorldPos=self.position)
+        self.interface.drawPlayerHealth(window=self.surface, playerHealthNow=self.target.healthNow, playerHealthMax=self.target.healthMax)
 
-        self.interface.drawPlayerHealth(window=window, playerHealthNow=self.target.healthNow, playerHealthMax=self.target.healthMax)
+        window.blit(self.surface, self.displayOffset)

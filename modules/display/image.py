@@ -14,13 +14,6 @@ class SpriteImage(pygame.sprite.Sprite):
         elif fromPath:
             self.image = pygame.image.load(fromPath)
         self.width, self.height = self.image.get_size()
-        self.image = pygame.transform.scale(
-            self.image, (
-                int(self.width * const.game.GAME_SIZE_RATIO),
-                int(self.height * const.game.GAME_SIZE_RATIO)
-            )
-        )
-        self.width, self.height = self.image.get_size()
 
 
     def update(self):

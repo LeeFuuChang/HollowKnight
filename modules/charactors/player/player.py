@@ -46,10 +46,10 @@ class Player:
         self.imageWidth, self.imageHeight = self.currentImageGroup.getImage().get_size()
 
         self.collidedCount = 0
-        self.collideboxOffsetX = const.collidebox.PLAYER_COLLIDEBOX_OFFSET_X*const.game.GAME_SIZE_RATIO
-        self.collideboxOffsetY = const.collidebox.PLAYER_COLLIDEBOX_OFFSET_Y*const.game.GAME_SIZE_RATIO
-        self.collideboxWidth = const.collidebox.PLAYER_COLLIDEBOX_WIDTH*const.game.GAME_SIZE_RATIO
-        self.collideboxHeight = const.collidebox.PLAYER_COLLIDEBOX_HEIGHT*const.game.GAME_SIZE_RATIO
+        self.collideboxOffsetX = const.player.PLAYER_COLLIDEBOX_OFFSET_X
+        self.collideboxOffsetY = const.player.PLAYER_COLLIDEBOX_OFFSET_Y
+        self.collideboxWidth = const.player.PLAYER_COLLIDEBOX_WIDTH
+        self.collideboxHeight = const.player.PLAYER_COLLIDEBOX_HEIGHT
 
         self.damageBoxes = util.classes.NamedObject(
             attack = [],
@@ -62,7 +62,7 @@ class Player:
         self.lastLandedPosition = None
 
         self.healthNow = 5
-        self.healthMax = 7
+        self.healthMax = 5
 
         self.position = util.classes.Vec2(
             int(self.displaySize[0] / 2) - (self.imageWidth if self.facingLR>0 else 0),
@@ -74,10 +74,15 @@ class Player:
 
 
 
+    def checkPlayerCanDash(self):
+        return (
+            not self.states.attack) and (
+            self.dashCooldownTimer.check(autoReset=False))
+
     def updatePlayerDash(self, pressedKeys, movementboundaries):
         if not self.skillUnlocked.dash: return
 
-        self.states.dashAvailable = self.dashCooldownTimer.check(autoReset=False)
+        self.states.dashAvailable = self.checkPlayerCanDash()
 
         if pressedKeys[pygame.K_c] and self.states.dashAvailable and not self.states.dash:
             self.states.dash = True
@@ -104,10 +109,17 @@ class Player:
             self.states.dash = False
             self.position.y += 1 #lower player back down
 
+    def checkPlayerCanSuperDash(self):
+        return (
+            not self.states.attack) and (
+            self.states.grounded)
+
     def updatePlayerSuperDash(self, pressedKeys, movementboundaries):
         if not self.skillUnlocked.superDash: return
 
-        if pressedKeys[pygame.K_s] and not self.states.superDash and self.states.grounded:
+        self.states.superDashAvailable = self.checkPlayerCanSuperDash()
+
+        if pressedKeys[pygame.K_s] and not self.states.superDash and self.states.superDashAvailable:
             self.velocity.x = 0
             if self.superDashHeldTimer.check(autoReset=False):
                 self.states.superDash = True
@@ -216,8 +228,8 @@ class Player:
     def getPlayerAttackDamageBox(self):
         if not self.states.attack: return []
         playerCenter = self.position + (
-            int(const.images.PLAYER_IMAGES_DEFAULT_WIDTH*const.game.GAME_SIZE_RATIO/2),
-            int(const.images.PLAYER_IMAGES_DEFAULT_HEIGHT*const.game.GAME_SIZE_RATIO/2)
+            int(const.images.PLAYER_IMAGES_DEFAULT_WIDTH/2),
+            int(const.images.PLAYER_IMAGES_DEFAULT_HEIGHT/2)
         )
         attackDamageBoxPTL, attackDamageBoxPBR = self.damageData.__getattribute__(
             f"attack{self.states.attack}"
@@ -253,10 +265,18 @@ class Player:
         moveInput = 0
         if pressedKeys[pygame.K_RIGHT] and pressedKeys[pygame.K_LEFT]:
             moveInput = 0
-        elif self.states.attack in [0, 4] and pressedKeys[pygame.K_RIGHT]:
-            moveInput = 1
-        elif self.states.attack in [0, 3] and pressedKeys[pygame.K_LEFT]:
-            moveInput = -1
+        elif not (pressedKeys[pygame.K_RIGHT] or pressedKeys[pygame.K_LEFT]):
+            moveInput = 0
+        elif pressedKeys[pygame.K_LEFT]:
+            if self.states.attack == 0:
+                moveInput = -1
+            elif self.states.attack != 4 and self.facingLR == -1:
+                moveInput = -1
+        elif pressedKeys[pygame.K_RIGHT]:
+            if self.states.attack == 0:
+                moveInput = 1
+            elif self.states.attack != 3 and self.facingLR == 1:
+                moveInput = 1
 
         if moveInput != 0:
             self.velocity.x = const.player.PLAYER_VELOCITY_HORIZONTAL*moveInput
@@ -640,10 +660,10 @@ class Player:
         displayPos = (self.position - cameraWorldPos)
         displayImg = self.getImage()
         if self.facingLR < 0:
-            displayPos.x += const.images.PLAYER_IMAGES_DEFAULT_WIDTH*const.game.GAME_SIZE_RATIO
+            displayPos.x += const.images.PLAYER_IMAGES_DEFAULT_WIDTH
             displayPos.x -= displayImg.get_width()
         if self.facingUD < 0:
-            displayPos.y += const.images.PLAYER_IMAGES_DEFAULT_HEIGHT*const.game.GAME_SIZE_RATIO
+            displayPos.y += const.images.PLAYER_IMAGES_DEFAULT_HEIGHT
             displayPos.y -= displayImg.get_height()
 
         window.blit(displayImg, displayPos.toTuple())

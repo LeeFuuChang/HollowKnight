@@ -41,7 +41,8 @@ class BreakableRect:
                 force=util.classes.Vec2.zero()
             )
         ]
-        self.durability = durability
+        self.durabilityNow = durability
+        self.durabilityMax = durability
 
 
     def update(self, player):
@@ -53,8 +54,8 @@ class BreakableRect:
                 ): continue
                 self.invulnerableTimer.reset()
                 self.isInvulnerable = True
-                self.durability = max(self.durability-1, 0)
-                print("hit", self.durability)
+                self.durabilityNow = max(self.durabilityNow-1, 0)
+                # print("hit", self.durabilityNow)
         elif self.invulnerableTimer.check(autoReset=False):
             self.isInvulnerable = False
 

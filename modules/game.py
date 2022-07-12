@@ -13,22 +13,27 @@ pygame.init()
 class HollowKnight:
     def __init__(self):
         self.window = pygame.display.set_mode((
-            const.game.WINDOW_DEFAULT_WIDTH, 
-            const.game.WINDOW_DEFAULT_HEIGHT, 
+            const.game.GAME_WIDTH, 
+            const.game.GAME_HEIGHT 
         ), pygame.FULLSCREEN)
         self.frame = pygame.time.Clock().tick
 
-        self.displaySize = pygame.display.get_surface().get_size()
+        self.displaySize = (
+            const.game.GAME_WIDTH,
+            const.game.GAME_HEIGHT
+        )
 
         self.player = charactors.player.Player(displaySize=self.displaySize)
 
         self.camera = display.Camera(
-            displaySize=self.displaySize, target=self.player
+            displaySize=self.displaySize, displayOffset=(
+                const.game.DISPLAY_OFFSET_X,
+                const.game.DISPLAY_OFFSET_Y
+            ), target=self.player
         )
 
         self.currentLevelID = 0
         self.currentLevel = world.areas.Area(self.currentLevelID)
-        print(len(self.currentLevel.playerBoundaries))
 
         self.currentLines = self.currentLevel.playerBoundaries
         self.information = display.Information()
@@ -60,7 +65,7 @@ class HollowKnight:
             for evt in pygame.event.get():
                 if evt.type == pygame.QUIT: return
 
-            self.window.fill((255, 255, 255))
+            self.window.fill((0, 0, 0))
 
             pressedKeys = pygame.key.get_pressed()
 
@@ -73,8 +78,8 @@ class HollowKnight:
 
             time.Timer.addAll()
 
-            self.camera.update(pressedKeys=pressedKeys, boundingBoxes=self.currentLevel.cameraBoundaries)
-            self.camera.draw(self.window)
+            self.camera.update(boundingBoxes=self.currentLevel.cameraBoundaries)
+            self.camera.draw(window=self.window, currentLevel=self.currentLevel)
 
             self.renderGameInformation()
 

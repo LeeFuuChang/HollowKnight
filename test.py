@@ -1,15 +1,19 @@
-class NamedObject:
-    def __init__(self, **kwargs):
-        self.names = []
-        for name, value in kwargs.items():
-            self.names.append(name)
-            self.__setattr__(
-                name, value
-            )
+import pygame
+pygame.init()
 
-    def __getitem__(self, __arg):
-        return self.__getattribute__(__arg)
+window = pygame.display.set_mode((3000, 3000), pygame.FULLSCREEN)
 
+while(True):
+    for evt in pygame.event.get():
+        if evt.type == pygame.QUIT:
+            break
 
-a = NamedObject(**{"omg": 3, "ooo": 1})
-print(a.omg)
+    window.fill((0, 0, 0))
+
+    pygame.draw.rect(
+        window, (255, 0, 0), pygame.Rect(
+            0, 0, 300, 300
+        )
+    )
+
+    pygame.display.update()

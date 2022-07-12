@@ -36,8 +36,8 @@ class Interface:
     def drawPlayerHealth(self, window, playerHealthNow, playerHealthMax):
         window.blit(
             self.images.GAMEPLAY_HEALTH_FRAME, (
-                const.interface.PLAYER_HEALTH_FRAME_OFFSET_X * const.game.GAME_SIZE_RATIO,
-                const.interface.PLAYER_HEALTH_FRAME_OFFSET_Y * const.game.GAME_SIZE_RATIO
+                const.interface.PLAYER_HEALTH_FRAME_OFFSET_X,
+                const.interface.PLAYER_HEALTH_FRAME_OFFSET_Y
             )
         )
         for i in range(playerHealthMax):
@@ -45,9 +45,9 @@ class Interface:
                 window.blit(
                     self.images.GAMEPLAY_HEALTH_BLANK, (
                         (
-                            const.interface.PLAYER_HEALTH_BLOCK_OFFSET_X * const.game.GAME_SIZE_RATIO
-                             + int(const.interface.PLAYER_HEALTH_BLOCK_WIDTH*const.game.GAME_SIZE_RATIO/3)*i
-                             + const.interface.PLAYER_HEALTH_BLOCK_WIDTH*const.game.GAME_SIZE_RATIO*(i+1)
+                            const.interface.PLAYER_HEALTH_BLOCK_OFFSET_X 
+                             + int(const.interface.PLAYER_HEALTH_BLOCK_WIDTH/3)*i
+                             + const.interface.PLAYER_HEALTH_BLOCK_WIDTH*(i+1)
                         ), 
                         const.interface.PLAYER_HEALTH_BLOCK_OFFSET_Y
                     )
@@ -56,9 +56,9 @@ class Interface:
                 window.blit(
                     self.images.GAMEPLAY_HEALTH_FULL, (
                         (
-                            const.interface.PLAYER_HEALTH_BLOCK_OFFSET_X * const.game.GAME_SIZE_RATIO
-                             + int(const.interface.PLAYER_HEALTH_BLOCK_WIDTH*const.game.GAME_SIZE_RATIO/3)*i
-                             + const.interface.PLAYER_HEALTH_BLOCK_WIDTH*const.game.GAME_SIZE_RATIO*(i+1)
+                            const.interface.PLAYER_HEALTH_BLOCK_OFFSET_X 
+                             + int(const.interface.PLAYER_HEALTH_BLOCK_WIDTH/3)*i
+                             + const.interface.PLAYER_HEALTH_BLOCK_WIDTH*(i+1)
                         ), 
                         const.interface.PLAYER_HEALTH_BLOCK_OFFSET_Y
                     )
