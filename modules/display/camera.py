@@ -254,9 +254,9 @@ class Camera(CameraModes):
             return onX and onY
         return False
 
-    def getVisibleLines(self, currentLines):
+    def filterVisibleLines(self, lines):
         visibleLines = []
-        for line in currentLines:
+        for line in lines:
             if self.checkCollideWithLine(line, extend=const.camera.CAMERA_VISIBLE_EXTENSION_LENGTH_RATIO):
                 visibleLines.append(line)
         return visibleLines

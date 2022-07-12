@@ -6,3 +6,6 @@ class NamedObject:
             self.__setattr__(
                 name, value
             )
+
+    def __getitem__(self, __arg):
+        return self.__getattribute__(__arg)

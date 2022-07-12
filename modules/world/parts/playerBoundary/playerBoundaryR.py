@@ -3,10 +3,12 @@
 #  D
 
 
-from ..part import MapConstructionLine
+
+from .constructionLine import ConstructionLine
 from .... import util
-class LineR(MapConstructionLine):
+class LineR(ConstructionLine):
     correctionDirection = (1, 0)
+
     def correction(self, targetPos, 
         targetCollideboxOffsetX, targetCollideboxOffsetY, 
         targetCollideboxWidth, targetCollideboxHeight

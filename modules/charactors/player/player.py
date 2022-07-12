@@ -1,9 +1,10 @@
 from ... import const
 from ... import util
 from ... import time
-from .damageData import getPlayerDamageBoxes
+from .damageData import getPlayerDamageData
 from .statesData import getPlayerStatesData
 from .skills import getPlayerSkills
+from .spells import getPlayerSpells
 from .states import getPlayerStates
 import pygame
 
@@ -26,9 +27,10 @@ class Player:
 
 
     def __init__(self, displaySize):
-        self.damageData = getPlayerDamageBoxes()
+        self.damageData = getPlayerDamageData()
         self.statesData = getPlayerStatesData()
-        self.skill = getPlayerSkills()
+        self.skillUnlocked = getPlayerSkills()
+        self.spellUnlocked = getPlayerSpells()
         self.states = getPlayerStates()
 
         self.facingLR = 1
@@ -49,6 +51,13 @@ class Player:
         self.collideboxWidth = const.collidebox.PLAYER_COLLIDEBOX_WIDTH*const.game.GAME_SIZE_RATIO
         self.collideboxHeight = const.collidebox.PLAYER_COLLIDEBOX_HEIGHT*const.game.GAME_SIZE_RATIO
 
+        self.damageBoxes = util.classes.NamedObject(
+            attack = [],
+            spell = util.classes.NamedObject(
+                **{spellName : [] for spellName in self.spellUnlocked.names}
+            )
+        )
+
         self.lastLandedFloor = None
         self.lastLandedPosition = None
 
@@ -66,7 +75,7 @@ class Player:
 
 
     def updatePlayerDash(self, pressedKeys, movementboundaries):
-        if not self.skill.dash: return
+        if not self.skillUnlocked.dash: return
 
         self.states.dashAvailable = self.dashCooldownTimer.check(autoReset=False)
 
@@ -96,7 +105,7 @@ class Player:
             self.position.y += 1 #lower player back down
 
     def updatePlayerSuperDash(self, pressedKeys, movementboundaries):
-        if not self.skill.superDash: return
+        if not self.skillUnlocked.superDash: return
 
         if pressedKeys[pygame.K_s] and not self.states.superDash and self.states.grounded:
             self.velocity.x = 0
@@ -171,60 +180,61 @@ class Player:
             self.states.attackAvailable = True
 
     def updatePlayerAttackKnockback(self, knockbackLines):
-        if not self.states.attack: return
+        for attackDamageBoxPTL, attackDamageBoxPBR in self.damageBoxes.attack:
+            for line in knockbackLines:
+                hit = util.functions.rectCollideWithStraightLine(
+                    RectPTL = attackDamageBoxPTL, 
+                    RectPBR = attackDamageBoxPBR, 
+                    LineP1 = line.p1, 
+                    LineP2 = line.p2
+                )
+                if not hit: continue
+                if not self.states.knockback:
+                    self.states.knockback = True
+                    self.knockbackTimer.reset()
+                if not self.knockbackTimer.check(autoReset=False):
+                    if (self.states.attack == 2) and (line.correctionDirection == (0, -1)):
+                        self.velocity.y = max(
+                            self.velocity.y - const.player.PLAYER_ATTACK_KNOCKBACK_VELOCITY,
+                            -const.player.PLAYER_ATTACK_KNOCKBACK_MAX_VELOCITY
+                        )
+                    elif (self.states.attack == 3) and (line.correctionDirection == (1, 0)):
+                        self.velocity.x = min(
+                            self.velocity.x + const.player.PLAYER_ATTACK_KNOCKBACK_VELOCITY,
+                            const.player.PLAYER_ATTACK_KNOCKBACK_MAX_VELOCITY
+                        )
+                    elif (self.states.attack == 4) and (line.correctionDirection == (-1, 0)):
+                        self.velocity.x = min(
+                            self.velocity.x - const.player.PLAYER_ATTACK_KNOCKBACK_VELOCITY,
+                            -const.player.PLAYER_ATTACK_KNOCKBACK_MAX_VELOCITY
+                        )
+
+
+
+
+
+    def getPlayerAttackDamageBox(self):
+        if not self.states.attack: return []
         playerCenter = self.position + (
             int(const.images.PLAYER_IMAGES_DEFAULT_WIDTH*const.game.GAME_SIZE_RATIO/2),
             int(const.images.PLAYER_IMAGES_DEFAULT_HEIGHT*const.game.GAME_SIZE_RATIO/2)
         )
         attackDamageBoxPTL, attackDamageBoxPBR = self.damageData.__getattribute__(
             f"attack{self.states.attack}"
-        ).getDamageBox(playerCenter)
+        ).damageBox.getDamageBox(playerCenter)
+        return [
+            [attackDamageBoxPTL, attackDamageBoxPBR],
+        ]
 
-        for line in knockbackLines:
-            hit = util.functions.rectCollideWithStraightLine(
-                RectPTL = attackDamageBoxPTL, 
-                RectPBR = attackDamageBoxPBR, 
-                LineP1 = line.p1, 
-                LineP2 = line.p2
-            )
-            if not hit: continue
-            if not self.states.knockback:
-                self.states.knockback = True
-                self.knockbackTimer.reset()
-            if not self.knockbackTimer.check(autoReset=False):
-                if (self.states.attack == 2) and (line.correctionDirection == (0, -1)):
-                    self.velocity.y = max(
-                        self.velocity.y - const.player.PLAYER_ATTACK_KNOCKBACK_VELOCITY,
-                        -const.player.PLAYER_ATTACK_KNOCKBACK_MAX_VELOCITY
-                    )
-                elif (self.states.attack == 3) and (line.correctionDirection == (1, 0)):
-                    self.velocity.x = min(
-                        self.velocity.x + const.player.PLAYER_ATTACK_KNOCKBACK_VELOCITY,
-                        const.player.PLAYER_ATTACK_KNOCKBACK_MAX_VELOCITY
-                    )
-                elif (self.states.attack == 4) and (line.correctionDirection == (-1, 0)):
-                    self.velocity.x = min(
-                        self.velocity.x - const.player.PLAYER_ATTACK_KNOCKBACK_VELOCITY,
-                        -const.player.PLAYER_ATTACK_KNOCKBACK_MAX_VELOCITY
-                    )
+    def updatePlayerDamageBoxes(self):
+        self.damageBoxes.attack = self.getPlayerAttackDamageBox()
 
-
-
-
-
-    def getPlayerDamageBox(self):
-        damageBoxes = []
-        if self.states.attack:
-            playerCenter = self.position + (
-                int(const.images.PLAYER_IMAGES_DEFAULT_WIDTH*const.game.GAME_SIZE_RATIO/2),
-                int(const.images.PLAYER_IMAGES_DEFAULT_HEIGHT*const.game.GAME_SIZE_RATIO/2)
-            )
-            damageBoxPTL, damageBoxPBR = self.damageData.__getattribute__(
-                f"attack{self.states.attack}"
-            ).getDamageBox(playerCenter)
-            damageBoxes.append([damageBoxPTL, damageBoxPBR])
-
-        return damageBoxes
+    def getPlayerAllDamageBoxes(self):
+        spellDamageBoxes = []
+        for spellName in self.damageBoxes.spell.names:
+            for box in self.damageBoxes.spell[spellName]:
+                spellDamageBoxes.append(box)
+        return self.damageBoxes.attack + spellDamageBoxes
 
 
 
@@ -270,7 +280,7 @@ class Player:
             return
 
         # havn't unlock midAirJump skill
-        if not self.skill.midAirJump:
+        if not self.skillUnlocked.midAirJump:
             # midAirJump not available
             self.states.midAirJumpAvailable = False
 
@@ -279,7 +289,7 @@ class Player:
                 self.jumpHeldTimer.reset()
                 self.states.jump = True
                 self.states.grounded = False
-            elif self.states.midAirJumpAvailable and self.skill.midAirJump:
+            elif self.states.midAirJumpAvailable and self.skillUnlocked.midAirJump:
                 self.midAirJumpTimer.reset()
                 self.states.midAirJump = True
                 self.states.midAirJumpAvailable = False
@@ -290,11 +300,11 @@ class Player:
                 self.velocity.y = -const.player.PLAYER_VELOCITY_VERTICAL # accelerate up
 
         # (jumped or falling) and not grounded and haven't midAirJumped yet and also unlocked skill to midAirJump
-        elif (self.states.jump or self.states.fall) and not self.states.grounded and not self.states.midAirJump and self.skill.midAirJump:
+        elif (self.states.jump or self.states.fall) and not self.states.grounded and not self.states.midAirJump and self.skillUnlocked.midAirJump:
             self.states.midAirJumpAvailable = True # midAirJump available
 
         # midAirJumped and still in midAirJump acceleration time
-        if self.states.midAirJump and not self.midAirJumpTimer.check(autoReset=False) and self.skill.midAirJump:
+        if self.states.midAirJump and not self.midAirJumpTimer.check(autoReset=False) and self.skillUnlocked.midAirJump:
             self.velocity.y = -const.player.PLAYER_VELOCITY_VERTICAL # accelerate up
 
 
@@ -515,7 +525,7 @@ class Player:
                 if box.collideWithPoint(point):
                     self.healthNow = max(0, self.healthNow-box.damageAmount)
                     if box.respawnType == const.game.RESPAWN_TYPE_SAVE_POINT or self.healthNow == 0:
-                        pass
+                        self.healthNow = self.healthMax
                     elif box.respawnType == const.game.RESPAWN_TYPE_NO_RESPAWN:
                         pass
                     elif box.respawnType == const.game.RESPAWN_TYPE_NEAREST_GROUND:
@@ -572,29 +582,21 @@ class Player:
 
 
     def update(self, pressedKeys, movementboundaries, damageBoxes):
-        if self.animateTimer.check():
-            self.currentImageGroup.next()
+        if self.animateTimer.check(): self.currentImageGroup.next()
 
         self.applyGravity()
-
         self.updatePlayerFacing(pressedKeys=pressedKeys)
-
         self.updatePlayerRun(pressedKeys=pressedKeys)
-
         self.updatePlayerJump(pressedKeys=pressedKeys)
-
         self.updatePlayerSkills(pressedKeys=pressedKeys, movementboundaries=movementboundaries)
-
-        self.updatePlayerAttack(pressedKeys=pressedKeys)
-
-        self.updatePlayerAttackKnockback(knockbackLines=[line for box in damageBoxes for line in box.lines])
-
         self.position.add(self.velocity)
 
+        self.updatePlayerAttack(pressedKeys=pressedKeys)
+        self.updatePlayerDamageBoxes()
+        self.updatePlayerAttackKnockback(knockbackLines=[line for box in damageBoxes for line in box.lines])
+
         self.checkMovementCollisions(boundaries=movementboundaries)
-
         self.checkDamageCollisions(damageBoxes=damageBoxes)
-
         self.cliffDetection(movementboundaries=movementboundaries)
 
         self.updateImageGroupBaseOnState()
@@ -620,7 +622,12 @@ class Player:
         )
 
     def drawDamagebox(self, window, cameraWorldPos):
-        for pTL, pBR in self.getPlayerDamageBox():
+        spellDamageBoxes = []
+        for spellName in self.damageBoxes.spell.names:
+            for box in self.damageBoxes.spell[spellName]:
+                spellDamageBoxes.append(box)
+        boxes = self.damageBoxes.attack + spellDamageBoxes
+        for pTL, pBR in boxes:
             pygame.draw.rect(
                 window, const.game.DAMAGEBOX_DISPLAY_COLOR,
                 pygame.Rect(

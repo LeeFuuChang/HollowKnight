@@ -2,7 +2,7 @@ from ... import util
 
 def getPlayerStates():
     return util.classes.NamedObject(
-        invulnerable = False,
+        isInvulnerable = False,
 
         attack = 0,
         attackAvailable = False,

@@ -47,3 +47,9 @@ todo: 鏡頭邊界順暢化 (順暢鎖定)
 2022-07-11T02-24
 完成 player attack (4個攻擊方向: 上下左右)
 完成 player attack knockback (3個攻擊方向: 下左右 皆是往反方向擊退 ex. 往下攻擊 玩家獲得往上的force)
+
+
+
+2022-07-12T16-50
+完成 breakable wall (可破壞的玩家邊界)
+完成 player attack 可破壞 breakable wall (breakable wall 有各自獨立的耐久度/可承受的攻擊次數)

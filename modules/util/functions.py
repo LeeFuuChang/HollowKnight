@@ -32,3 +32,11 @@ def rectCollideWithStraightLine(RectPTL, RectPBR, LineP1, LineP2):
         )
         onX = RectPTL[0] <= LineP1[0] and LineP1[0] <= RectPBR[0]
         return onX and onY
+
+
+def rectCollideWithRect(Rect1PTL, Rect1PBR, Rect2PTL, Rect2PBR):
+    return (
+        Rect1PBR[0] > Rect2PTL[0]) and (
+        Rect1PTL[0] < Rect2PBR[0]) and (
+        Rect1PBR[1] > Rect2PTL[1]) and (
+        Rect1PTL[1] < Rect2PBR[1])

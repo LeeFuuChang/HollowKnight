@@ -11,8 +11,20 @@ class Area:
         self.playerBoundaries = []
         self.cameraBoundaries = []
         self.damageCollidebox = []
-        self.breakableCollidebox = []
+        self.breakableRects = []
         self.loadData(self.areaID)
+
+
+
+
+
+    def update__breakableRects(self, player):
+        for rect in self.breakableRects:
+            rect.update(player=player)
+            if rect.durability == 0: self.breakableRects.remove(rect)
+
+    def update(self, player):
+        self.update__breakableRects(player=player)
 
 
 
@@ -55,21 +67,30 @@ class Area:
                     )
                 )
 
-
-    def loadData__breakableCollidebox(self, areaID):
-        self.breakableCollidebox = []
+    def loadData__breakableRects(self, areaID):
+        self.breakableRects = []
+        with open(os.path.join(self.dataPath, f"{areaID}", "breakableRects.json"), "r") as f:
+            data = json.load(f)
+            for rect in data:
+                self.breakableRects.append(
+                    parts.playerBoundary.BreakableRect(
+                        pTL=util.classes.Vec2(rect[0][0], rect[0][1]), 
+                        pBR=util.classes.Vec2(rect[1][0], rect[1][1]),
+                        durability=rect[2]
+                    )
+                )
 
     def loadData(self, areaID):
         self.loadData__playerBoundaries(areaID=areaID)
         self.loadData__cameraBoundaries(areaID=areaID)
         self.loadData__damageCollidebox(areaID=areaID)
-        self.loadData__breakableCollidebox(areaID=areaID)
+        self.loadData__breakableRects(areaID=areaID)
 
 
 
 
 
-    def drawLevelLines(self, lines, window, cameraWorldPos, color):
+    def drawLevelLines__draw(self, lines, window, cameraWorldPos, color):
         for line in lines:
             line = line - cameraWorldPos
             pygame.draw.line(
@@ -78,19 +99,19 @@ class Area:
                 (line.p2.x, line.p2.y)
             )
 
-    def draw__playerBoundaries(self, window, cameraWorldPos, color):
-        self.drawLevelLines(lines=self.playerBoundaries, window=window, cameraWorldPos=cameraWorldPos, color=color)
+    def drawLevelLines__playerBoundaries(self, window, cameraWorldPos, color):
+        self.drawLevelLines__draw(lines=self.playerBoundaries, window=window, cameraWorldPos=cameraWorldPos, color=color)
 
-    def draw__cameraBoundaries(self, window, cameraWorldPos, color):
-        self.drawLevelLines(lines=self.cameraBoundaries, window=window, cameraWorldPos=cameraWorldPos, color=color)
+    def drawLevelLines__cameraBoundaries(self, window, cameraWorldPos, color):
+        self.drawLevelLines__draw(lines=self.cameraBoundaries, window=window, cameraWorldPos=cameraWorldPos, color=color)
 
-    def draw__damageCollidebox(self, window, cameraWorldPos, color):
-        self.drawLevelLines(lines=self.damageCollidebox, window=window, cameraWorldPos=cameraWorldPos, color=color)
+    def drawLevelLines__damageCollidebox(self, window, cameraWorldPos, color):
+        self.drawLevelLines__draw(lines=self.damageCollidebox, window=window, cameraWorldPos=cameraWorldPos, color=color)
 
-    def draw__breakableCollidebox(self, window, cameraWorldPos, color):
-        self.drawLevelLines(lines=self.breakableCollidebox, window=window, cameraWorldPos=cameraWorldPos, color=color)
+    def drawLevelLines__breakableCollidebox(self, window, cameraWorldPos, color):
+        self.drawLevelLines__draw(lines=self.breakableCollidebox, window=window, cameraWorldPos=cameraWorldPos, color=color)
 
-    def draw(self, window, cameraWorldPos, color):
+    def drawLevelLines(self, window, cameraWorldPos, color):
         self.draw__playerBoundaries(window=window, cameraWorldPos=cameraWorldPos, color=color)
         self.draw__cameraBoundaries(window=window, cameraWorldPos=cameraWorldPos, color=color)
         self.draw__damageCollidebox(window=window, cameraWorldPos=cameraWorldPos, color=color)

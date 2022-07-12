@@ -26,7 +26,6 @@ class HollowKnight:
             displaySize=self.displaySize, target=self.player
         )
 
-
         self.currentLevelID = 0
         self.currentLevel = world.areas.Area(self.currentLevelID)
         print(len(self.currentLevel.playerBoundaries))
@@ -43,28 +42,17 @@ class HollowKnight:
             f"XY: {self.player.position.x} / {self.player.position.y}",
             f"V: { round(self.player.velocity.x)} / {self.player.velocity.y}",
             f"CollidedLines: {self.player.collidedCount}",
-            f"",
+        ] + [""] + [
             f"CameraMode: {self.camera.mode}",
-            f"",
-            f"States:",
-            f"       attack: {self.player.states.attack}",
-            f"       attackAvailable: {self.player.states.attackAvailable}",
-            f"       knockback: {self.player.states.knockback}",
-            f"       idol: {self.player.states.idol}",
-            f"       run: {self.player.states.run}",
-            f"       dash: {self.player.states.dash}",
-            f"       dashAvailable: {self.player.states.dashAvailable}",
-            f"       superDash: {self.player.states.superDash}",
-            f"       jump: {self.player.states.jump}",
-            f"       midAirJump: {self.player.states.midAirJump}",
-            f"       midAirJumpAvailable: {self.player.states.midAirJumpAvailable}",
-            f"       fall: {self.player.states.fall}",
-            f"       grounded: {self.player.states.grounded}",
-            f"       onCliff: {self.player.states.onCliff}",
-            f"",
-            f"Skill:",
-            f"       dash: {self.player.skill.dash}",
-            f"       midAirJump: {self.player.skill.midAirJump}",
+        ] + [""] + [
+            f"States:"] + [
+            f"       {name}: {self.player.states[name]}" for name in self.player.states.names
+        ] + [""] + [
+            f"Skill:"] + [
+            f"       {name}: {self.player.skillUnlocked[name]}" for name in self.player.skillUnlocked.names
+        ] + [""] + [
+            f"Spell:"] + [
+            f"       {name}: {self.player.spellUnlocked[name]}" for name in self.player.spellUnlocked.names
         ])
 
     def run(self):
@@ -76,7 +64,10 @@ class HollowKnight:
 
             pressedKeys = pygame.key.get_pressed()
 
-            visibleLines = self.camera.getVisibleLines(currentLines=self.currentLevel.playerBoundaries)
+            movementboundaries = [*self.currentLevel.playerBoundaries]
+            for rect in self.currentLevel.breakableRects:
+                movementboundaries.extend(rect.lines)
+            visibleLines = self.camera.filterVisibleLines(lines=movementboundaries)
 
             self.player.update(pressedKeys=pressedKeys, movementboundaries=visibleLines, damageBoxes=self.currentLevel.damageCollidebox)
 
@@ -87,7 +78,7 @@ class HollowKnight:
 
             self.renderGameInformation()
 
-            # self.currentLevel.draw(window=self.window, cameraWorldPos=self.camera.position, color=(0, 0, 255))
+            self.currentLevel.update(player=self.player)
 
             self.frame(const.game.FPS)
             pygame.display.update()

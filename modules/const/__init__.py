@@ -5,3 +5,4 @@ from . import collidebox
 from . import game
 from . import player
 from . import interface
+from . import world

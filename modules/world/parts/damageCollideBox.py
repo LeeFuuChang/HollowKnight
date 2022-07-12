@@ -39,7 +39,5 @@ class DamageCollidebox:
 
     def collideWithPoint(self, point):
         return (
-            self.x1 <= point[0] and point[0] <= self.x2
-        ) and (
-            self.y1 <= point[1] and point[1] <= self.y2
-        )
+            self.x1 <= point[0] and point[0] <= self.x2) and (
+            self.y1 <= point[1] and point[1] <= self.y2)

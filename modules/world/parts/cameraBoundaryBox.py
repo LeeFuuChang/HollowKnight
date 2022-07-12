@@ -31,32 +31,32 @@ class CameraBoundingBox:
         if cameraPos[1]+cameraDisplayHeight > self.y2:
             return util.classes.Vec2(0, self.y2 - (cameraPos[1]+cameraDisplayHeight))
         else:
-            return util.classes.Vec2(0, 0)
+            return util.classes.Vec2.zero()
 
 
     def getCorrectionD(self, cameraPos, cameraDisplayWidth, cameraDisplayHeight):
         if cameraPos[1] < self.y1:
             return util.classes.Vec2(0, self.y1-cameraPos[1])
         else:
-            return util.classes.Vec2(0, 0)
+            return util.classes.Vec2.zero()
 
 
     def getCorrectionL(self, cameraPos, cameraDisplayWidth, cameraDisplayHeight):
         if cameraPos[0]+cameraDisplayWidth > self.x2:
             return util.classes.Vec2(self.x2-(cameraPos[0]+cameraDisplayWidth), 0)
         else:
-            return util.classes.Vec2(0, 0)
+            return util.classes.Vec2.zero()
 
 
     def getCorrectionR(self, cameraPos, cameraDisplayWidth, cameraDisplayHeight):
         if cameraPos[0] < self.x1:
             return util.classes.Vec2(self.x1-cameraPos[0], 0)
         else:
-            return util.classes.Vec2(0, 0)
+            return util.classes.Vec2.zero()
 
 
     def getCorrection(self, cameraPos, cameraDisplayWidth, cameraDisplayHeight):
-        correctionVector = util.classes.Vec2(0, 0)
+        correctionVector = util.classes.Vec2.zero()
         for i in range(4):
             if not self.directions[i]: continue
             vct = self.correctionFunctions[i](cameraPos, cameraDisplayWidth, cameraDisplayHeight)

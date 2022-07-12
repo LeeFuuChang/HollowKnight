@@ -23,30 +23,42 @@ class DamageBox:
         ]
 
 
-def getPlayerDamageBoxes():
+def getPlayerDamageData():
     return util.classes.NamedObject(
-        attack1 = DamageBox(
-            PTLoffsetX=-int(const.images.PLAYER_IMAGES_DEFAULT_WIDTH *const.game.GAME_SIZE_RATIO*0.5),
-            PTLoffsetY=-int(const.images.PLAYER_IMAGES_DEFAULT_HEIGHT*const.game.GAME_SIZE_RATIO*1.5),
-            PBRoffsetX= int(const.images.PLAYER_IMAGES_DEFAULT_WIDTH *const.game.GAME_SIZE_RATIO*0.5),
-            PBRoffsetY= 0,
+        attack1 = util.classes.NamedObject(
+            damageBox = DamageBox(
+                PTLoffsetX=-int(const.images.PLAYER_IMAGES_DEFAULT_WIDTH *const.game.GAME_SIZE_RATIO*0.5),
+                PTLoffsetY=-int(const.images.PLAYER_IMAGES_DEFAULT_HEIGHT*const.game.GAME_SIZE_RATIO*1.5),
+                PBRoffsetX= int(const.images.PLAYER_IMAGES_DEFAULT_WIDTH *const.game.GAME_SIZE_RATIO*0.5),
+                PBRoffsetY= 0,
+            ),
+            damage = const.player.PLAYER_ATTACK_DAMAGE
         ),
-        attack2 = DamageBox(
-            PTLoffsetX=-int(const.images.PLAYER_IMAGES_DEFAULT_WIDTH *const.game.GAME_SIZE_RATIO*0.5),
-            PTLoffsetY= 0,
-            PBRoffsetX= int(const.images.PLAYER_IMAGES_DEFAULT_WIDTH *const.game.GAME_SIZE_RATIO*0.5),
-            PBRoffsetY= int(const.images.PLAYER_IMAGES_DEFAULT_HEIGHT*const.game.GAME_SIZE_RATIO*1.5),
+        attack2 = util.classes.NamedObject(
+            damageBox = DamageBox(
+                PTLoffsetX=-int(const.images.PLAYER_IMAGES_DEFAULT_WIDTH *const.game.GAME_SIZE_RATIO*0.5),
+                PTLoffsetY= 0,
+                PBRoffsetX= int(const.images.PLAYER_IMAGES_DEFAULT_WIDTH *const.game.GAME_SIZE_RATIO*0.5),
+                PBRoffsetY= int(const.images.PLAYER_IMAGES_DEFAULT_HEIGHT*const.game.GAME_SIZE_RATIO*1.5),
+            ),
+            damage = const.player.PLAYER_ATTACK_DAMAGE
         ),
-        attack3 = DamageBox(
-            PTLoffsetX=-int(const.images.PLAYER_IMAGES_DEFAULT_WIDTH *const.game.GAME_SIZE_RATIO*1.5),
-            PTLoffsetY=-int(const.images.PLAYER_IMAGES_DEFAULT_HEIGHT*const.game.GAME_SIZE_RATIO*0.5),
-            PBRoffsetX= 0,
-            PBRoffsetY= int(const.images.PLAYER_IMAGES_DEFAULT_HEIGHT*const.game.GAME_SIZE_RATIO*0.5),
+        attack3 = util.classes.NamedObject(
+            damageBox = DamageBox(
+                PTLoffsetX=-int(const.images.PLAYER_IMAGES_DEFAULT_WIDTH *const.game.GAME_SIZE_RATIO*1.5),
+                PTLoffsetY=-int(const.images.PLAYER_IMAGES_DEFAULT_HEIGHT*const.game.GAME_SIZE_RATIO*0.5),
+                PBRoffsetX= 0,
+                PBRoffsetY= int(const.images.PLAYER_IMAGES_DEFAULT_HEIGHT*const.game.GAME_SIZE_RATIO*0.5),
+            ),
+            damage = const.player.PLAYER_ATTACK_DAMAGE
         ),
-        attack4 = DamageBox(
-            PTLoffsetX= 0,
-            PTLoffsetY=-int(const.images.PLAYER_IMAGES_DEFAULT_HEIGHT*const.game.GAME_SIZE_RATIO*0.5),
-            PBRoffsetX= int(const.images.PLAYER_IMAGES_DEFAULT_WIDTH *const.game.GAME_SIZE_RATIO*1.5),
-            PBRoffsetY= int(const.images.PLAYER_IMAGES_DEFAULT_HEIGHT*const.game.GAME_SIZE_RATIO*0.5),
+        attack4 = util.classes.NamedObject(
+            damageBox = DamageBox(
+                PTLoffsetX= 0,
+                PTLoffsetY=-int(const.images.PLAYER_IMAGES_DEFAULT_HEIGHT*const.game.GAME_SIZE_RATIO*0.5),
+                PBRoffsetX= int(const.images.PLAYER_IMAGES_DEFAULT_WIDTH *const.game.GAME_SIZE_RATIO*1.5),
+                PBRoffsetY= int(const.images.PLAYER_IMAGES_DEFAULT_HEIGHT*const.game.GAME_SIZE_RATIO*0.5),
+            ),
+            damage = const.player.PLAYER_ATTACK_DAMAGE
         ),
     )
