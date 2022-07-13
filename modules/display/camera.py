@@ -3,7 +3,6 @@ from .. import util
 import pygame
 from PIL import Image
 from .interface import Interface
-bgggggggggggggggggg = Image.open(r"C:\Users\a0962\Downloads\level1.jpg")
 
 
 
@@ -267,6 +266,12 @@ class Camera(CameraModes):
 
 
 
+
+    def fastChase(self):
+        idx1, idx2, idx3 = self.getCameraModeIndex()
+        self.mode = const.camera.CAMERA_MODE_MATRIX[idx1][idx2][idx3]
+        self.updateDesiredCameraPosition()
+        self.position = self.desiredPosition.clone()
 
     def getCameraLockedMode(self):
         pass

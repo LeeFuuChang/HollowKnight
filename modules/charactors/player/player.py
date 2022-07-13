@@ -26,12 +26,14 @@ class Player:
     midAirJumpTimer = time.Timer(const.player.PLAYER_MID_AIR_JUMP_TIME)
 
 
-    def __init__(self, displaySize):
+    def __init__(self, displaySize, areaID):
         self.damageData = getPlayerDamageData()
         self.statesData = getPlayerStatesData()
         self.skillUnlocked = getPlayerSkills()
         self.spellUnlocked = getPlayerSpells()
         self.states = getPlayerStates()
+
+        self.areaID = areaID
 
         self.facingLR = 1
         self.facingUD = 0
@@ -45,7 +47,8 @@ class Player:
         self.displaySize = displaySize
         self.imageWidth, self.imageHeight = self.currentImageGroup.getImage().get_size()
 
-        self.collidedCount = 0
+        self.collidedCountV = 0
+        self.collidedCountH = 0
         self.collideboxOffsetX = const.player.PLAYER_COLLIDEBOX_OFFSET_X
         self.collideboxOffsetY = const.player.PLAYER_COLLIDEBOX_OFFSET_Y
         self.collideboxWidth = const.player.PLAYER_COLLIDEBOX_WIDTH
@@ -479,10 +482,13 @@ class Player:
 
     def checkMovementCollisions(self, boundaries):
         collidedLines = []
+        self.collidedCountV = 0
+        self.collidedCountH = 0
         for line in boundaries:
             if self.checkCollideWithLine(line=line):
                 collidedLines.append(line)
-        self.collidedCount = len(collidedLines)
+                if line.isVertical: self.collidedCountV+=1
+                if line.isHorizontal: self.collidedCountH+=1
         if not collidedLines: 
             self.states.grounded = False
             return
@@ -553,6 +559,31 @@ class Player:
                     return True
         return False
 
+    def teleportTo(self, areas, areaID, portalID):
+        self.areaID = areaID
+        arrivePosition = areas[areaID].portalRects[portalID].getArrivePosition(
+            targetCollideboxOffset=(self.collideboxOffsetX, self.collideboxOffsetY),
+            targetCollideboxSize=(self.collideboxWidth, self.collideboxHeight)
+        )
+        self.position.x = arrivePosition[0]
+        self.position.y = arrivePosition[1]
+
+    def checkPortalCollisions(self, portalRects, areas):
+        pTL = (self.position.x + self.collideboxOffsetX, self.position.y + self.collideboxOffsetY)
+        pBR = (pTL[0] + self.collideboxWidth, pTL[1] + self.collideboxHeight)
+        points = [
+            pTL, (pBR[0], pTL[1]),
+            (pTL[0], pBR[1]), pBR
+        ]
+        for portal in portalRects:
+            for vertex in points:
+                if portal.collideWithPoint(point=vertex):
+                    if self.states.teleportAvailable:
+                        self.states.teleportAvailable = False
+                        self.teleportTo(areas=areas, areaID=portal.destAreaID, portalID=portal.destPortalID)
+                    return
+        self.states.teleportAvailable = True
+
     def cliffDetection(self, movementboundaries):
         if not (self.lastLandedFloor and self.states.grounded):
             self.states.onCliff = False
@@ -601,7 +632,7 @@ class Player:
 
 
 
-    def update(self, pressedKeys, movementboundaries, damageBoxes):
+    def update(self, pressedKeys, allAreas, movementboundaries, damageBoxes, portalRects):
         if self.animateTimer.check(): self.currentImageGroup.next()
 
         self.applyGravity()
@@ -617,6 +648,7 @@ class Player:
 
         self.checkMovementCollisions(boundaries=movementboundaries)
         self.checkDamageCollisions(damageBoxes=damageBoxes)
+        self.checkPortalCollisions(portalRects=portalRects, areas=allAreas)
         self.cliffDetection(movementboundaries=movementboundaries)
 
         self.updateImageGroupBaseOnState()

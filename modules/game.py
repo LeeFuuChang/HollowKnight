@@ -23,7 +23,11 @@ class HollowKnight:
             const.game.GAME_HEIGHT
         )
 
-        self.player = charactors.player.Player(displaySize=self.displaySize)
+        self.allAreas = [world.areas.Area(i) for i in range(const.world.AREAS_COUNT)]
+        self.currentAreaID = 0
+        self.currentArea = self.allAreas[self.currentAreaID]
+
+        self.player = charactors.player.Player(displaySize=self.displaySize, areaID=self.currentAreaID)
 
         self.camera = display.Camera(
             displaySize=self.displaySize, displayOffset=(
@@ -32,10 +36,7 @@ class HollowKnight:
             ), target=self.player
         )
 
-        self.currentLevelID = 0
-        self.currentLevel = world.areas.Area(self.currentLevelID)
-
-        self.currentLines = self.currentLevel.playerBoundaries
+        self.currentLines = self.currentArea.playerBoundaries
         self.information = display.Information()
 
 
@@ -46,7 +47,7 @@ class HollowKnight:
         self.information.render(self, [
             f"XY: {self.player.position.x} / {self.player.position.y}",
             f"V: { round(self.player.velocity.x)} / {self.player.velocity.y}",
-            f"CollidedLines: {self.player.collidedCount}",
+            f"CollidedLines: {self.player.collidedCountV} V   {self.player.collidedCountH} H",
         ] + [""] + [
             f"CameraMode: {self.camera.mode}",
         ] + [""] + [
@@ -69,21 +70,30 @@ class HollowKnight:
 
             pressedKeys = pygame.key.get_pressed()
 
-            movementboundaries = [*self.currentLevel.playerBoundaries]
-            for rect in self.currentLevel.breakableRects:
+            movementboundaries = [*self.currentArea.playerBoundaries]
+            for rect in self.currentArea.breakableRects:
                 movementboundaries.extend(rect.lines)
             visibleLines = self.camera.filterVisibleLines(lines=movementboundaries)
 
-            self.player.update(pressedKeys=pressedKeys, movementboundaries=visibleLines, damageBoxes=self.currentLevel.damageCollidebox)
+            self.player.update(
+                pressedKeys=pressedKeys, allAreas=self.allAreas,
+                movementboundaries=visibleLines, 
+                damageBoxes=self.currentArea.damageCollidebox,
+                portalRects=self.currentArea.portalRects
+            )
+            if self.player.areaID != self.currentAreaID:
+                self.currentAreaID = self.player.areaID
+                self.currentArea = self.allAreas[self.currentAreaID]
+                self.camera.fastChase()
 
             time.Timer.addAll()
 
-            self.camera.update(boundingBoxes=self.currentLevel.cameraBoundaries)
-            self.camera.draw(window=self.window, currentLevel=self.currentLevel)
+            self.camera.update(boundingBoxes=self.currentArea.cameraBoundaries)
+            self.camera.draw(window=self.window, currentLevel=self.currentArea)
 
             self.renderGameInformation()
 
-            self.currentLevel.update(player=self.player)
+            self.currentArea.update(player=self.player)
 
             self.frame(const.game.FPS)
             pygame.display.update()

@@ -15,6 +15,7 @@ class Area:
         self.cameraBoundaries = []
         self.damageCollidebox = []
         self.breakableRects = []
+        self.portalRects = []
         self.loadData(self.areaID)
         self.background = display.DisplayBackground(
             baseImage = Image.open(os.path.join(
@@ -90,11 +91,26 @@ class Area:
                     )
                 )
 
+    def loadData__portalRects(self, areaID):
+        self.portalRects = []
+        with open(os.path.join(self.dataPath, f"{areaID}", "portalRects.json"), "r") as f:
+            data = json.load(f)
+            for rect in sorted(data, key=lambda portal:portal[2]):
+                self.portalRects.append(
+                    parts.portalRect(
+                        pTL=util.classes.Vec2(rect[0][0], rect[0][1]),
+                        pBR=util.classes.Vec2(rect[1][0], rect[1][1]),
+                        portalID=rect[2], arriveStiky=rect[5:9],
+                        destAreaID=rect[3], destPortalID=rect[4]
+                    )
+                )
+
     def loadData(self, areaID):
         self.loadData__playerBoundaries(areaID=areaID)
         self.loadData__cameraBoundaries(areaID=areaID)
         self.loadData__damageCollidebox(areaID=areaID)
         self.loadData__breakableRects(areaID=areaID)
+        self.loadData__portalRects(areaID=areaID)
 
 
 
